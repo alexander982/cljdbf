@@ -76,11 +76,13 @@
               :dumb (.skip ^BufferedInputStream db 14)}))))))
 
 (defn read-dbf-meta
-  [db]
-  (let [_ (.mark ^BufferedInputStream db 1024)
-        result (read-record-meta! db (read-db-meta! db))
-        _ (.reset ^BufferedInputStream db)]
-    result))
+  "Read full meta map fo dbf file"
+  [file]
+  (let [db-meta (read-db-meta file)]
+    (assoc db-meta
+           :fields (vec (read-records-meta
+                         file
+                         (:first-offset db-meta))))))
 
 (defn read-records!
   [dbf conv]
