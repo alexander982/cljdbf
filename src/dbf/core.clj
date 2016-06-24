@@ -11,6 +11,7 @@
            BUFFER-SIZE))
 
 (defn byte-to-int
+  "Convert two or four bytes to integer value"
   ([b1 b2]
    (byte-to-int b1 b2 0 0))
   ([b1 b2 b3 b4]
@@ -20,6 +21,7 @@
            (bit-shift-left b4 24))))
 
 (defn bytes-to-str
+  "Convert given bytes to string representation"
   [& bytes]
   (-> bytes
       byte-array
@@ -27,6 +29,7 @@
       str/trim))
 
 (defn read-bytes!
+  "Read specific number of bytes from file"
   [file n]
   (doall (for [_ (range n)]
            (.read ^BufferedInputStream file))))
