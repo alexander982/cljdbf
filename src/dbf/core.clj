@@ -31,15 +31,20 @@
   (doall (for [_ (range n)]
            (.read ^BufferedInputStream file))))
 
-(defn read-db-meta!
-  [db]
-  {:db-version (.read ^BufferedInputStream db)
-   :last-modified {:year (.read ^BufferedInputStream db)
-                   :month (.read ^BufferedInputStream db)
-                   :day (.read ^BufferedInputStream db)}
-   :num-records (apply byte-to-int (read-bytes! db 4))
-   :first-offset (apply byte-to-int (read-bytes! db 2))
-   :record-length (apply byte-to-int (read-bytes! db 2))})
+(defn read-db-meta
+  "Read dbf`s file meta.
+
+  Take a file name string and returns a map"
+  [file]
+  (with-open [db (BufferedInputStream.
+                  (FileInputStream. ^String file) BUFFER-SIZE)]
+   {:db-version (.read ^BufferedInputStream db)
+    :last-modified {:year (.read ^BufferedInputStream db)
+                    :month (.read ^BufferedInputStream db)
+                    :day (.read ^BufferedInputStream db)}
+    :num-records (apply byte-to-int (read-bytes! db 4))
+    :first-offset (apply byte-to-int (read-bytes! db 2))
+    :record-length (apply byte-to-int (read-bytes! db 2))}))
 
 (defn read-record-meta!
   [db {:keys [first-offset] :as db-meta}]
