@@ -46,24 +46,31 @@
     :first-offset (apply byte-to-int (read-bytes! db 2))
     :record-length (apply byte-to-int (read-bytes! db 2))}))
 
-(defn read-record-meta!
-  [db {:keys [first-offset] :as db-meta}]
-  (.skip ^BufferedInputStream db 20)
-  (assoc db-meta
-         :fields (doall
-                  (map #(dissoc % :dumb)
-                       (for [x (range (/ (- first-offset 32 1) 32))]
-                         {:name 
-                          (apply bytes-to-str
-                                 (filter
-                                  (complement zero?)
-                                  (for [x (range 11)]
-                                    (.read ^BufferedInputStream db))))
-                          :type (char (.read ^BufferedInputStream db))
-                          :offset (apply byte-to-int (read-bytes! db 4))
-                          :length (.read ^BufferedInputStream db)
-                          :rationale-length (.read ^BufferedInputStream db)
-                          :dumb (.skip ^BufferedInputStream db 14)})))))
+(defn read-records-meta
+  "Read records metadata
+
+  Take file as string and offset of first dbf data record. Return
+  sequence of records meta maps"
+  ([file]
+   (read-records-meta file (:first-offset (read-db-meta file))))
+  ([file first-offset] 
+   (with-open [db (BufferedInputStream.
+                   (FileInputStream. ^String file) BUFFER-SIZE)]
+     (.skip ^BufferedInputStream db 32) ;;skip main dbf meta - first 32b
+     (doall
+      (map #(dissoc % :dumb)
+           (for [_ (range (/ (- first-offset 32 1) 32))]
+             {:name 
+              (apply bytes-to-str
+                     (filter
+                      (complement zero?)
+                      (for [_ (range 11)]
+                        (.read ^BufferedInputStream db))))
+              :type (char (.read ^BufferedInputStream db))
+              :offset (apply byte-to-int (read-bytes! db 4))
+              :length (.read ^BufferedInputStream db)
+              :rationale-length (.read ^BufferedInputStream db)
+              :dumb (.skip ^BufferedInputStream db 14)}))))))
 
 (defn read-dbf-meta
   [db]
