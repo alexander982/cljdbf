@@ -93,7 +93,8 @@
   [dbf dbf-meta conv]
   (let [{:keys [first-offset
                 fields 
-                num-records]} dbf-meta
+                num-records
+                rationale-length]} dbf-meta
         _ (.skip ^BufferedInputStream dbf first-offset)]
     (for [_ (range num-records)]
       (let [tmp (assoc {} :deleted
@@ -119,18 +120,27 @@
                       :default (read-bytes! dbf length)))))
          tmp fields)))))
 
-(defn export-to-csv
-  [fp recs fields conv encoding]
-  (with-open [file (OutputStreamWriter. (FileOutputStream. ^String fp)
-                                       ^String encoding)]
-    (binding [*out* file]
-      (doseq [rec recs]
-        (when (not (:deleted rec))
-          (println
-           (apply str (interpose "|"
-                                 (for [field fields]
-                                   (if (contains? conv field)
-                                     ((field conv) (field rec))
+(defn export-to-csv!
+  "Write data from dbf in-file to csv out-file. The out-file will
+  contain fields that included in fields vector. The keywords order
+  in fields vector are also important. You can specify a :conv map
+  that contain functions for some special conversion fields data. The
+  function will by applyed on row byte data. Ather options
+  are :encoding string and :delimiter string."
+  [in-file out-file fields & {:keys [conv encoding delimiter]
+      :or {conv {} encoding "UTF8" delimiter "|"}}]
+  (let [dbf-meta (read-dbf-meta in-file)]
+    (with-open [out-file (OutputStreamWriter.
+                          (FileOutputStream. ^String out-file)
+                          ^String encoding)
+                dbf (BufferedInputStream. (FileInputStream. in-file)
+                                          BUFFER-SIZE)]
+      (binding [*out* out-file]
+        (doseq [rec (read-records! dbf dbf-meta conv)]
+          (when (not (:deleted rec))
+            (println
+             (apply str (interpose delimiter
+                                   (for [field fields]
                                      (field rec)))))))))))
 
 (defn chars-to-int
