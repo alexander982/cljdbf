@@ -76,7 +76,7 @@
               :dumb (.skip ^BufferedInputStream db 14)}))))))
 
 (defn read-dbf-meta
-  "Read full meta map fo dbf file"
+  "Read full meta map of dbf file"
   [file]
   (let [db-meta (read-db-meta file)]
     (assoc db-meta
@@ -85,16 +85,17 @@
                          (:first-offset db-meta))))))
 
 (defn read-records!
-  [dbf conv]
-  (let [dbf-meta (read-record-meta! dbf (read-db-meta! dbf))
-        {:keys [first-offset
-                fields
-                record-length
+  "Return a lazy sequence of record maps. Because of leziness the
+  function must be used in a scope of opened dbf file. It also take
+  dbf metadata and map of conversion function. A conv map contains
+  keys as field names like {:feild-name conv-function, ...} and may by
+  used in special cases, othewise - empty map."
+  [dbf dbf-meta conv]
+  (let [{:keys [first-offset
+                fields 
                 num-records]} dbf-meta
-        _ (.read ^BufferedInputStream dbf)
-        ;; skip 1 byte = 0x0D - end of fields data block
-        ]
-    (for [x (range num-records)]
+        _ (.skip ^BufferedInputStream dbf first-offset)]
+    (for [_ (range num-records)]
       (let [tmp (assoc {} :deleted
                        (if (= 0x20 (.read ^BufferedInputStream dbf))
                          false true))]
