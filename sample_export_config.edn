@@ -1,0 +1,20 @@
+[{:in-file "../../db/ogk02/m000101.dbf"
+  :out-file "m000101.csv"
+  :fields [:kse :kdse :zona :poz :kol :kpk :datk]
+  :conv {:kdse :chars-to-int
+         :kse :chars-to-int}
+  :delimiter "|"
+  :encoding "UTF8"}
+ 
+ {:in-file "../../db/ogk02/m000102.dbf"
+  :out-file "m000102.csv"
+  :fields [:kdse :obizi :nomdet :ndse :zol :ser :pl :pal]
+  :conv {:kdse :chars-to-int}}
+
+ {:in-file "../../db/ogk02/m000103.dbf"
+  :out-file "m000103.csv"
+  :fields [:ki :obiz :naim :kpprod :kol_zol :kol_ser :kol_plat
+           :kol_pal :ves_izd :ves_net :kod :dat_vvod]
+  :conv {:ki :chars-to-int
+         :dat_vvod :bytes-to-str}}
+ ]
