@@ -1,7 +1,9 @@
 (ns dbf.core
-  (:require [clojure.string :as str])
+  (:require [clojure.edn :as edn]
+            [clojure.string :as str]
+            [clojure.java.io :as io])
   (:import [java.io BufferedInputStream FileInputStream
-            OutputStreamWriter FileOutputStream])
+            OutputStreamWriter FileOutputStream PushbackReader])
   (:gen-class))
 
 (def BUFFER-SIZE 8192)
@@ -84,6 +86,8 @@
                          file
                          (:first-offset db-meta))))))
 
+(def conv-functs)
+
 (defn read-records!
   "Return a lazy sequence of record maps. Because of leziness the
   function must be used in a scope of opened dbf file. It also take
@@ -107,7 +111,7 @@
              (assoc m kv
                     (cond
                       (contains? conv kv)
-                      (apply (kv conv) (read-bytes! dbf length))
+                      (apply ((kv conv) conv-functs) (read-bytes! dbf length))
                       (= type \C) (apply bytes-to-str
                                          (read-bytes! dbf length))
                       (= type \N) (let [s (apply bytes-to-str
@@ -150,18 +154,18 @@
   [c1 c2 c3]
   (byte-to-int (dec  c3) (dec c2) (dec c1) 0))
 
+(def conv-functs {:chars-to-int chars-to-int
+                  :bytes-to-str bytes-to-str})
+
 (defn -main
   "Convert db files to csv"
   [& args]
-  (export-to-csv!  "m000101.dbf" "m000101_conv.csv"
-                   [:kse :kdse :zona :poz :kol :kpk :datk]
-                   :conv {:kdse chars-to-int
-                          :kse chars-to-int})
-  (export-to-csv! "m000102.dbf" "m000102_conv.csv"
-                  [:kdse :obizi :nomdet :ndse :zol :ser :pl :pal]
-                  :conv {:kdse chars-to-int})
-  (export-to-csv! "m000103.dbf" "m000103_conv.csv"
-                  [:ki :obiz :naim :kpprod :kol_zol :kol_ser :kol_plat
-                   :kol_pal :ves_izd :ves_net :kod :dat_vvod]
-                  :conv {:ki chars-to-int
-                         :dat_vvod bytes-to-str}))
+  (let [import-config (with-open [reader (io/reader (first args))]
+                        (edn/read (PushbackReader. reader)))]
+    (doseq [conf import-config]
+      (export-to-csv! (:in-file conf)
+                      (:out-file conf)
+                      (:fields conf)
+                      :conv (or (:conv conf) {})
+                      :encoding (or (:encoding conf) "UTF8")
+                      :delimiter (or (:delimiter conf) "|")))))
