@@ -1,16 +1,28 @@
 # dbf
 
-FIXME: description
+dbf is used to read data from binary FoxPro .dbf files and export it
+to csv format.
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Download source from http://github.com/alexander982/FIXME. You also
+need leiningen 2.0+ and Oracle or Open JDK 1.6+ to compile it.
+
+## Compilation
+
+In console type
+
+    $ lein uberjar
+
+It will crate a .jar file in target directory.
 
 ## Usage
 
-FIXME: explanation
+Before using dbf you need to prepare config. The config is a clojure
+edn file. You can use a sample_export_config.edn as an example.
+After that type:
 
-    $ java -jar dbf-0.1.0-standalone.jar [args]
+    $ java -jar dbf-0.1.0-standalone.jar export_config.edn
 
 ## Options
 
@@ -20,17 +32,9 @@ FIXME: listing of options this app accepts.
 
 ...
 
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
-
 ## License
 
-Copyright © 2015 FIXME
+Copyright © 2016 Alexander Kozlov
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
