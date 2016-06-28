@@ -144,39 +144,24 @@
                                      (field rec)))))))))))
 
 (defn chars-to-int
+  "Example of function that convert three characters to integer
+  value. (It was a case when developer use a three char as index in his
+  tables may be for space saving.)"
   [c1 c2 c3]
   (byte-to-int (dec  c3) (dec c2) (dec c1) 0))
 
 (defn -main
   "Convert db files to csv"
   [& args]
-  (with-open [db1 (BufferedInputStream.
-                   (FileInputStream.
-                    "M000101.DBF")
-                   BUFFER-SIZE)
-              db2 (BufferedInputStream.
-                   (FileInputStream.
-                    "M000102.DBF")
-                   BUFFER-SIZE)
-              db3 (BufferedInputStream.
-                   (FileInputStream.
-                    "M000103.DBF")
-                   BUFFER-SIZE)]
-    (export-to-csv "m000101_conv.csv"
-                   (read-records! db1 {:kdse chars-to-int
-                                       :kse chars-to-int})
+  (export-to-csv!  "m000101.dbf" "m000101_conv.csv"
                    [:kse :kdse :zona :poz :kol :kpk :datk]
-                   {:kol int :kpk int}
-                   "UTF8")
-    (export-to-csv "m000102_conv.csv"
-                   (read-records! db2 {:kdse chars-to-int})
-                   [:kdse :obizi :nomdet :ndse :zol :ser :pl :pal]
-                   {}
-                   "UTF8")
-    (export-to-csv "m000103_conv.csv"
-                   (read-records! db3 {:ki chars-to-int
-                                       :dat_vvod bytes-to-str})
-                   [:ki :obiz :naim :kpprod :kol_zol :kol_ser :kol_plat
-                    :kol_pal :ves_izd :ves_net :kod :dat_vvod]
-                   {}
-                   "UTF8")))
+                   :conv {:kdse chars-to-int
+                          :kse chars-to-int})
+  (export-to-csv! "m000102.dbf" "m000102_conv.csv"
+                  [:kdse :obizi :nomdet :ndse :zol :ser :pl :pal]
+                  :conv {:kdse chars-to-int})
+  (export-to-csv! "m000103.dbf" "m000103_conv.csv"
+                  [:ki :obiz :naim :kpprod :kol_zol :kol_ser :kol_plat
+                   :kol_pal :ves_izd :ves_net :kod :dat_vvod]
+                  :conv {:ki chars-to-int
+                         :dat_vvod bytes-to-str}))
