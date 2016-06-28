@@ -1,4 +1,4 @@
-(defproject dbf "0.1.1-SNAPSHOT"
+(defproject dbf "0.1.1"
   :description "Чтение(экспорт в CSV) DBF-файлов"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
