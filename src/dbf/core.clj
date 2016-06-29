@@ -138,7 +138,7 @@
     (with-open [out-file (OutputStreamWriter.
                           (FileOutputStream. ^String out-file)
                           ^String encoding)
-                dbf (BufferedInputStream. (FileInputStream. in-file)
+                dbf (BufferedInputStream. (FileInputStream. ^String in-file)
                                           BUFFER-SIZE)]
       (binding [*out* out-file]
         (doseq [rec (read-records! dbf dbf-meta conv)]
