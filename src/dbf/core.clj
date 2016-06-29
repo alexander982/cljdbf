@@ -74,7 +74,7 @@
               :type (char (.read ^BufferedInputStream db))
               :offset (apply byte-to-int (read-bytes! db 4))
               :length (.read ^BufferedInputStream db)
-              :rationale-length (.read ^BufferedInputStream db)
+              :fractional-length (.read ^BufferedInputStream db)
               :dumb (.skip ^BufferedInputStream db 14)}))))))
 
 (defn read-dbf-meta
@@ -105,7 +105,7 @@
                          false true))]
         #_(println "[" x "]")
         (reduce
-         (fn [m {:keys [name type length rationale-length]}]
+         (fn [m {:keys [name type length fractional-length]}]
            (let [kv (keyword (str/lower-case name))]
              (assoc m kv
                     (cond
@@ -119,7 +119,7 @@
                                               0.0
                                               (java.math.BigDecimal.
                                                ^String s))]
-                                    (if (= rationale-length 0)
+                                    (if (= fractional-length 0)
                                       (int val)
                                       (double val)))
                       :default (read-bytes! dbf length)))))
