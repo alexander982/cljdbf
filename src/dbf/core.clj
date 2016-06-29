@@ -97,8 +97,7 @@
   [dbf dbf-meta conv]
   (let [{:keys [first-offset
                 fields 
-                num-records
-                rationale-length]} dbf-meta
+                num-records]} dbf-meta
         _ (.skip ^BufferedInputStream dbf first-offset)]
     (for [_ (range num-records)]
       (let [tmp (assoc {} :deleted
@@ -106,7 +105,7 @@
                          false true))]
         #_(println "[" x "]")
         (reduce
-         (fn [m {:keys [name type length]}]
+         (fn [m {:keys [name type length rationale-length]}]
            (let [kv (keyword (str/lower-case name))]
              (assoc m kv
                     (cond
@@ -115,12 +114,14 @@
                       (= type \C) (apply bytes-to-str
                                          (read-bytes! dbf length))
                       (= type \N) (let [s (apply bytes-to-str
-                                                 (read-bytes! dbf length))]
-                                    #_(println s)
-                                    (if (or (str/blank? s) (= s "."))
-                                      0.0
-                                      (double
-                                       (java.math.BigDecimal. ^String s))))
+                                                 (read-bytes! dbf length))
+                                        val (if (or (str/blank? s) (= s "."))
+                                              0.0
+                                              (java.math.BigDecimal.
+                                               ^String s))]
+                                    (if (= rationale-length 0)
+                                      (int val)
+                                      (double val)))
                       :default (read-bytes! dbf length)))))
          tmp fields)))))
 
