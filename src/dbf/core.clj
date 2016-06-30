@@ -36,6 +36,12 @@
   (doall (for [_ (range n)]
            (.read ^BufferedInputStream file))))
 
+(defn read-as-string!
+  "Read specified number of bytes as string"
+  [f n]
+  (apply bytes-to-str
+         (read-bytes! f n)))
+
 (defn read-db-meta
   "Read dbf`s file meta.
 
@@ -99,10 +105,8 @@
            (cond
              (contains? conv kv)
              (apply ((kv conv) conv-functs) (read-bytes! dbf length))
-             (= type \C)(apply bytes-to-str
-                               (read-bytes! dbf length))
-             (= type \D) (let [date (apply bytes-to-str
-                                          (read-bytes! dbf length))]
+             (= type \C) (read-as-string! dbf length)
+             (= type \D) (let [date (read-as-string! dbf length)]
                            (str (subs date 0 4) "-"
                                 (subs date 4 6) "-"
                                 (subs date 6)))
@@ -112,8 +116,7 @@
                              "FALSE"))
              (or (= type \N)
                  (= type \F))
-             (let [s (apply bytes-to-str
-                            (read-bytes! dbf length))
+             (let [s (read-as-string! dbf length)
                    val (if (or (str/blank? s) (= s "."))
                          0.0
                          (java.math.BigDecimal.
@@ -123,8 +126,7 @@
                  (double val)))
 
              (= type \M) (str "MEMO_" (Integer/parseInt
-                                      (apply bytes-to-str
-                                             (read-bytes! dbf length))))
+                                      (read-as-string! dbf length)))
              :default (vec (read-bytes! dbf length))))))
 
 (defn read-records!
