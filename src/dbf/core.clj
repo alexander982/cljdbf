@@ -88,6 +88,30 @@
 
 (def conv-functs)
 
+(defn read-field-val!
+  "Read and convert field's value. Take a conv map that contain
+  keywords pair of field name and func name for special case
+  conversion of field data. m is a map to which result will by
+  added. A forth parameter is a map of field metadata"
+  [dbf conv m {:keys [name type length fractional-length]}]
+  (let [kv (keyword (str/lower-case name))]
+    (assoc m kv
+           (cond
+             (contains? conv kv)
+             (apply ((kv conv) conv-functs) (read-bytes! dbf length))
+             (= type \C) (apply bytes-to-str
+                                (read-bytes! dbf length))
+             (= type \N) (let [s (apply bytes-to-str
+                                        (read-bytes! dbf length))
+                               val (if (or (str/blank? s) (= s "."))
+                                     0.0
+                                     (java.math.BigDecimal.
+                                      ^String s))]
+                           (if (= fractional-length 0)
+                             (int val)
+                             (double val)))
+             :default (read-bytes! dbf length)))))
+
 (defn read-records!
   "Return a lazy sequence of record maps. Because of leziness the
   function must be used in a scope of opened dbf file. It also take
@@ -103,27 +127,8 @@
       (let [tmp (assoc {} :deleted
                        (if (= 0x20 (.read ^BufferedInputStream dbf))
                          false true))]
-        #_(println "[" x "]")
-        (reduce
-         (fn [m {:keys [name type length fractional-length]}]
-           (let [kv (keyword (str/lower-case name))]
-             (assoc m kv
-                    (cond
-                      (contains? conv kv)
-                      (apply ((kv conv) conv-functs) (read-bytes! dbf length))
-                      (= type \C) (apply bytes-to-str
-                                         (read-bytes! dbf length))
-                      (= type \N) (let [s (apply bytes-to-str
-                                                 (read-bytes! dbf length))
-                                        val (if (or (str/blank? s) (= s "."))
-                                              0.0
-                                              (java.math.BigDecimal.
-                                               ^String s))]
-                                    (if (= fractional-length 0)
-                                      (int val)
-                                      (double val)))
-                      :default (read-bytes! dbf length)))))
-         tmp fields)))))
+        (reduce (partial read-field-val! dbf conv)
+                tmp fields)))))
 
 (defn export-to-csv!
   "Write data from dbf in-file to csv out-file. The out-file will
@@ -150,8 +155,8 @@
 
 (defn chars-to-int
   "Example of function that convert three characters to integer
-  value. (It was a case when developer use a three char as index in his
-  tables may be for space saving.)"
+  value. (It was a case when developer used a three char as index in
+  his tables may be for space saving.)"
   [c1 c2 c3]
   (byte-to-int (dec  c3) (dec c2) (dec c1) 0))
 
