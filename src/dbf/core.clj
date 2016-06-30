@@ -125,8 +125,9 @@
                  (int val)
                  (double val)))
 
-             (= type \M) (str "MEMO_" (Integer/parseInt
-                                      (read-as-string! dbf length)))
+             (= type \M) (str "MEMO_" (let [s (read-as-string! dbf length)]
+                                        (when (not (str/blank? s))
+                                                (Integer/parseInt s))))
              :default (vec (read-bytes! dbf length))))))
 
 (defn read-records!
