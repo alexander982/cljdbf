@@ -99,18 +99,33 @@
            (cond
              (contains? conv kv)
              (apply ((kv conv) conv-functs) (read-bytes! dbf length))
-             (= type \C) (apply bytes-to-str
-                                (read-bytes! dbf length))
-             (= type \N) (let [s (apply bytes-to-str
-                                        (read-bytes! dbf length))
-                               val (if (or (str/blank? s) (= s "."))
-                                     0.0
-                                     (java.math.BigDecimal.
-                                      ^String s))]
-                           (if (= fractional-length 0)
-                             (int val)
-                             (double val)))
-             :default (read-bytes! dbf length)))))
+             (= type \C)(apply bytes-to-str
+                               (read-bytes! dbf length))
+             (= type \D) (let [date (apply bytes-to-str
+                                          (read-bytes! dbf length))]
+                           (str (subs date 0 4) "-"
+                                (subs date 4 6) "-"
+                                (subs date 6)))
+             (= type \L) (let [val (read-bytes! dbf length)]
+                           (if (= (char (first val)) \T)
+                             "TRUE"
+                             "FALSE"))
+             (or (= type \N)
+                 (= type \F))
+             (let [s (apply bytes-to-str
+                            (read-bytes! dbf length))
+                   val (if (or (str/blank? s) (= s "."))
+                         0.0
+                         (java.math.BigDecimal.
+                          ^String s))]
+               (if (= fractional-length 0)
+                 (int val)
+                 (double val)))
+
+             (= type \M) (str "MEMO_" (Integer/parseInt
+                                      (apply bytes-to-str
+                                             (read-bytes! dbf length))))
+             :default (vec (read-bytes! dbf length))))))
 
 (defn read-records!
   "Return a lazy sequence of record maps. Because of leziness the
