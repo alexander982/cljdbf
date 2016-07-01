@@ -117,17 +117,23 @@
              (or (= type \N)
                  (= type \F))
              (let [s (read-as-string! dbf length)
-                   val (if (or (str/blank? s) (= s "."))
-                         0.0
-                         (java.math.BigDecimal.
-                          ^String s))]
+                   val (try (if (or (str/blank? s) (= s "."))
+                              0.0
+                              (java.math.BigDecimal.
+                               ^String s))
+                            (catch NumberFormatException e
+                              (binding [*out* *err*]
+                                (print "bad value: type: " type
+                                       "key: " kv " - ")
+                                (println s))
+                              0.0))]
                (if (= fractional-length 0)
                  (int val)
                  (double val)))
 
              (= type \M) (str "MEMO_" (let [s (read-as-string! dbf length)]
                                         (when (not (str/blank? s))
-                                                (Integer/parseInt s))))
+                                          (Integer/parseInt s))))
              :default (vec (read-bytes! dbf length))))))
 
 (defn read-records!
