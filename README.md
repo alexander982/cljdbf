@@ -1,6 +1,6 @@
-# dbf
+# cljdbf
 
-dbf is used to read data from binary FoxPro .dbf files and export it
+cljdbf is used to read data from binary FoxBase .dbf files and export it
 to csv format.
 
 ## Installation
@@ -18,19 +18,11 @@ It will crate a .jar file in target directory.
 
 ## Usage
 
-Before using dbf you need to prepare config. The config is a clojure
-edn file. You can use a sample_export_config.edn as an example.
-After that type:
+Before using cljdbf you need to prepare export config. The config is a
+clojure edn file. You can use a sample_export_config.edn as an
+example.  After that type:
 
     $ java -jar dbf-0.1.0-standalone.jar export_config.edn
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
 
 ## License
 
