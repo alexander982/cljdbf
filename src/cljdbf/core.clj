@@ -107,9 +107,11 @@
              (apply ((kv conv) conv-functs) (read-bytes! dbf length))
              (= type \C) (read-as-string! dbf length)
              (= type \D) (let [date (read-as-string! dbf length)]
-                           (str (subs date 0 4) "-"
-                                (subs date 4 6) "-"
-                                (subs date 6)))
+                           (if (str/blank? date)
+                             ""
+                             (str (subs date 0 4) "-"
+                                  (subs date 4 6) "-"
+                                  (subs date 6))))
              (= type \L) (let [val (read-bytes! dbf length)]
                            (if (= (char (first val)) \T)
                              "TRUE"
