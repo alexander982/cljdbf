@@ -1,9 +1,20 @@
-[{:in-file "../../db/ogk02/m000101.dbf"
+[{;;you can use relative or absolute paths
+  :in-file "../../db/ogk02/m000101.dbf"
   :out-file "m000101.csv"
+  ;;You need to list a fields names you want to export. The order of
+  ;;fields names is important. Field names is a keywords. You need to
+  ;;lowercase field name string and prepend it with colon.
   :fields [:kse :kdse :zona :poz :kol :kpk :datk]
+  ;;This map is optional and contain maping of field name to
+  ;;conversion function name. It is used for special cases and now it
+  ;;has only two functions: :char-to-int which convert three chars to
+  ;;int representation and :bytes-to-str which get all field data as
+  ;;string
   :conv {:kdse :chars-to-int
          :kse :chars-to-int}
+  ;;delimiter fo csv data (optional, default is "|")
   :delimiter "|"
+  ;;encoding of output file (optional, default is "UTF8")
   :encoding "UTF8"}
  
  {:in-file "../../db/ogk02/m000102.dbf"
