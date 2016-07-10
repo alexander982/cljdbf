@@ -1,9 +1,9 @@
 [{;;you can use relative or absolute paths
   :in-file "../../db/ogk02/m000101.dbf"
   :out-file "m000101.csv"
-  ;;You need to list a fields names you want to export. The order of
+  ;;You need to list fields names you want to export. The order of
   ;;fields names is important. Field names is a keywords. You need to
-  ;;lowercase field name string and prepend it with colon.
+  ;;lowercase field name string and prepend it with a colon.
   :fields [:kse :kdse :zona :poz :kol :kpk :datk]
   ;;This map is optional and contain maping of field name to
   ;;conversion function name. It is used for special cases and now it
